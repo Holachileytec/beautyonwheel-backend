@@ -1,11 +1,28 @@
-const Admin = require ("../models/AdminSchema.js");
+const Admin = require("../models/AdminSchema.js");
 
- const adminUpdateProfile = async (req, res) => {
+// const User = require("./models/User");
+
+// const createAdminIfNotFound = async () => {
+//   const adminExists = await User.findOne({ role: "admin" });
+
+//   if (!adminExists) {
+//     await User.create({
+//       name: "Super Admin",
+//       email: "genconsolution@gmail.com",
+//       password: "Gen@1949", // hash this
+//       role: "admin",
+//     });
+
+//     console.log("Admin user created");
+//   }
+// };
+
+const adminUpdateProfile = async (req, res) => {
   try {
     const admin = await Admin.findOneAndUpdate({ user: req.userId }, req.body, {
       new: true,
     });
-     if (!admin) {
+    if (!admin) {
       console.log("error occur");
 
       return res.status(404).json({ message: "Admin not found" });
@@ -26,4 +43,4 @@ const getAdmin = async (req, res) => {
   }
 };
 
-module.exports= {adminUpdateProfile , getAdmin}
+module.exports = { adminUpdateProfile, getAdmin};

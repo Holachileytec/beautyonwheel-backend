@@ -13,7 +13,7 @@ router.get("/allPlans", getAllPlans);
 
 // Protected routes
 router.post("/addplan", createPlan);
-router.put("/update/:id", auth, updatePlan);
+router.put("/update/:id", updatePlan);
 router.delete("/:id", deletePlan);
 
 module.exports = router;

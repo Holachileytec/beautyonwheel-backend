@@ -1,6 +1,6 @@
-const Booking = require("../models/BookingSchema.js") ;
-const User = require("../models/UserSchema.js") ;
-const Service = require("../models/ServiceSchema.js") ;
+const Booking = require("../models/BookingSchema.js");
+const User = require("../models/UserSchema.js");
+const Service = require("../models/ServiceSchema.js");
 
 // creating booking Client and Admin can create a booking
 const createBooking = async (req, res) => {
@@ -14,15 +14,14 @@ const createBooking = async (req, res) => {
       clientId = req.body.client;
     }
 
-    const { beautician, service, address, city, note, date, status } = req.body;
+    const { service, address, city, note, date, status } = req.body;
 
-    if (!clientId || !beautician || !service || !address || !date) {
-       return res.status(400).json({ message: "Missing required fields" });
+    if (!clientId || !service || !address || !date) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
     const newBooking = await Booking.create({
       client: clientId,
-      beautician,
       service,
       address,
       city, // Added city
@@ -30,23 +29,26 @@ const createBooking = async (req, res) => {
       date,
       status: status || "pending",
     });
-  
+    console.log("New Booking Created:", newBooking);
 
-    res.status(201).json({ message: "Booking Successfully Created", booking: newBooking });
+    res
+      .status(201)
+      .json({ message: "Booking Successfully Created", booking: newBooking });
   } catch (error) {
     // This will now tell you EXACTLY what Mongoose didn't like
-    console.error("Detailed Error:", error); 
-    return res.status(500).json({ message: "Database Error", error: error.message });
+    console.log("Detailed Error:", error);
+    return res
+      .status(500)
+      .json({ message: "Database Error", error: error.message });
   }
 };
 //get All the Booking - Admin,client,beautifician
 
- const allBookings = async (req, res) => {
+const allBookings = async (req, res) => {
   try {
-   
-    if (!req.user){
+    if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" });
-    } 
+    }
     const role = req.user?.role;
     let bookings;
     switch (role) {
@@ -79,13 +81,13 @@ const createBooking = async (req, res) => {
     return res
       .status(200)
       .json({ message: " booking fetched succcessfully", bookings });
-    } catch (error) {
+  } catch (error) {
     console.log(error);
     res.status(500).json({ message: "error in fetching bookings" });
   }
 };
 
- const getSingleBooking = async (req, res) => {
+const getSingleBooking = async (req, res) => {
   try {
     const { id } = req.params;
     const booking = await Booking.findById(id)
@@ -107,7 +109,7 @@ const createBooking = async (req, res) => {
   }
 };
 
- const updateBooking = async (req, res) => {
+const updateBooking = async (req, res) => {
   try {
     const booking = await Booking.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
@@ -122,7 +124,7 @@ const createBooking = async (req, res) => {
   }
 };
 
- const deleteBooking = async (req, res) => {
+const deleteBooking = async (req, res) => {
   try {
     const deleted = await Booking.findByIdAndDelete(req.params.id);
     if (!deleted) {
@@ -135,4 +137,10 @@ const createBooking = async (req, res) => {
     res.status(500).json({ message: "internal server error", error });
   }
 };
-module.exports= {deleteBooking,updateBooking,createBooking,getSingleBooking,allBookings}
+module.exports = {
+  deleteBooking,
+  updateBooking,
+  createBooking,
+  getSingleBooking,
+  allBookings,
+};

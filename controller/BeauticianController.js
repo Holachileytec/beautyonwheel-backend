@@ -12,6 +12,7 @@ const Beautician = require ("../models/BeauticianSchema.js");
       req.body,
       { new: true, runValidators:true
        }
+       
     );
  
     if (!beautician) {

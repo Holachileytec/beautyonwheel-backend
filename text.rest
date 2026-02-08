@@ -1,8 +1,8 @@
 ###
-POST http://localhost:8000/api/users/login
+POST http://localhost:8000/api/chat
     Content-Type: application/json
     
     {
-        "email":"writetoppy_2014@yahoo.com",
+        "":"writetoppy_2014@yahoo.com",
         "password":"@12344543" 
 }

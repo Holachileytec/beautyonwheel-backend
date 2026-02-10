@@ -1,15 +1,15 @@
-const express = require("express") ;
+const express = require("express");
 
-const bcrypt = require("bcryptjs") ;
-const jwt = require("jsonwebtoken") ;
-const User = require("../models/UserSchema.js") ;
-const Client = require("../models/ClientSchema.js") ;
-const Beautician = require("../models/BeauticianSchema.js") ;
-const Admin = require( "../models/AdminSchema.js");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/UserSchema.js");
+const Client = require("../models/ClientSchema.js");
+const Beautician = require("../models/BeauticianSchema.js");
+const Admin = require("../models/AdminSchema.js");
 
 // User Registration ....Route.Post("/api/users/register"), 1. endpoint
 
- const registerUser = async (req, res) => {
+const registerUser = async (req, res) => {
   console.log("hit user api");
   const { name, email, password, role, phone } = req.body;
 
@@ -19,8 +19,8 @@ const Admin = require( "../models/AdminSchema.js");
       return res.status(400).json({ message: "All fields required" });
     }
     // checking if user already exists
-    const existingUser = await User.findOne({ email }); 
-    
+    const existingUser = await User.findOne({ email });
+
     if (existingUser) {
       return res.status(409).json({ message: "User already exists" });
     }
@@ -37,7 +37,7 @@ const Admin = require( "../models/AdminSchema.js");
     });
 
     // create linked profile base on a role
-    let profile=null;
+    let profile = null;
 
     if (role.toLowerCase() === "client") {
       profile = await Client.create({
@@ -46,7 +46,6 @@ const Admin = require( "../models/AdminSchema.js");
         theme: "light",
         notification: "true",
       });
-
     } else if (role.toLowerCase() === "beautician") {
       profile = await Beautician.create({
         user: newUser._id,
@@ -58,38 +57,37 @@ const Admin = require( "../models/AdminSchema.js");
         notification: true,
         theme: "light",
       });
-    }else if (role.toLowerCase() === "admin") {
+    } else if (role.toLowerCase() === "admin") {
       profile = await Admin.create({
         user: newUser._id,
         address: "",
       });
-
-    
-    }else{
-      return res.status(400).json({message:"This role does not exist"})
+    } else {
+      return res.status(400).json({ message: "This role does not exist" });
     }
-     res
-        .status(201)
-        .json({ message: "User registered successfully", 
-          newUser, 
-          profile:profile || null
-         });
-
+    res.status(201).json({
+      message: "User registered successfully",
+      newUser,
+      profile: profile || null,
+    });
   } catch (error) {
     console.log(`Register error ${error}`);
 
-    res.status(500).json({ message:"something went wrong",error:error.message });
+    res
+      .status(500)
+      .json({ message: "something went wrong", error: error.message });
   }
 };
 // User Login ....Route.Post("/api/users/login"), 2. endpoint
- const loginUser = async (req, res) => {
+const loginUser = async (req, res) => {
+  console.log("hit login api");
   try {
     const { email, password } = req.body; // destructuring login req.body
 
-    if(!email || !password){
+    if (!email || !password) {
       return res.status(400).json({
-        message:"All fields required!"
-      })
+        message: "All fields required!",
+      });
     }
 
     // checking if user exists
@@ -113,19 +111,21 @@ const Admin = require( "../models/AdminSchema.js");
       {
         // generating jwt token
         expiresIn: "7d",
-      }
+      },
     );
 
-    const {password:userHashedPassword,...rest}=user._doc
-    res.status(200).json({ message: "login successfully", token, user:rest });
+    const { password: userHashedPassword, ...rest } = user._doc;
+    res.status(200).json({ message: "login successfully", token, user: rest });
   } catch (error) {
     console.log(`Login error: ${error}`);
-    res.status(500).json({ message: "something went wrong", error:error.message });
+    res
+      .status(500)
+      .json({ message: "something went wrong", error: error.message });
   }
 };
 
 // get all users // getUser ....Route.Get("/api/users/getAllUsers"), 3. endpoint admin
- const getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
     res
@@ -137,20 +137,22 @@ const Admin = require( "../models/AdminSchema.js");
 };
 
 // singleUser ....Route.Get("/api/users/getSingleUser/:id"), 4. endpoint
- const getSingleUser = async (req, res) => {
+const getSingleUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select("-password");
     if (!user) {
-     return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json({ message: "User feteched succssfully", user });
   } catch (error) {
-    res.status(500).json({ message: "failed to fetched user", error:error.message });
+    res
+      .status(500)
+      .json({ message: "failed to fetched user", error: error.message });
   }
 };
 
 // updateUser ....Route.Put("/api/users/updateUser/:id"), 5. endpoint
- const updateUser = async (req, res) => {
+const updateUser = async (req, res) => {
   try {
     const { name, email, phone, role, password } = req.body;
     const user = await User.findById(req.params.id);
@@ -164,7 +166,6 @@ const Admin = require( "../models/AdminSchema.js");
     if (password && password.trim() != "") {
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
-
     }
 
     // update other fields
@@ -182,7 +183,7 @@ const Admin = require( "../models/AdminSchema.js");
 
 //delete user
 // deleteUser ....Route.delete("/api/users/:id"), 6. endpoint
- const deleteUser = async (req, res) => {
+const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {
@@ -194,6 +195,11 @@ const Admin = require( "../models/AdminSchema.js");
   }
 };
 
-
-
-module.exports= {deleteUser,updateUser,getAllUsers,getSingleUser,loginUser,registerUser}
+module.exports = {
+  deleteUser,
+  updateUser,
+  getAllUsers,
+  getSingleUser,
+  loginUser,
+  registerUser,
+};

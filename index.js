@@ -69,6 +69,7 @@ app.use("/api/subservices", ServiceTypesRoutes);
 app.use("/api/plan", planRoute);
 app.use("/api/chat", chatRoute);
 
+
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({

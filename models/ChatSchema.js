@@ -4,20 +4,20 @@ const chatSchema = new mongoose.Schema(
   {
     beauticianId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "beautician",
-      required: true,
+      ref: "User",
+      required: false,
     },
 
     clientId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "client",
-      required: true,
+      ref: "User",
+      required: false,
     },
 
     adminId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "admin",
-      required: true,
+      ref: "User",
+      required: false,
     },
 
     type: String,

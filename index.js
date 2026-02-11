@@ -26,39 +26,31 @@ console.log("DB_URI from env:", process.env.mongodb_url);
 
 const PORT = process.env.PORT || 5000;
 const app = express();
-
-// Creating http server for Socket.io
 const server = http.createServer(app);
 
-// Define allowed origins
 const allowedOrigins = [
-  "http://beautyplug.com.ng",
-  "https://beautyplug.com.ng",
-  "http://localhost:5174",
   "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "https://beautyplug.com.ng", // ADD THIS
+  "https://www.beautyplug.com.ng", // ADD THIS
+  "http://beautyplug.com.ng",
 ];
 
-// Initialize Socket.io with CORS configuration
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  }),
+);
+
+// Enable CORS for Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    origin: allowedOrigins, // Must include your production frontend
+    methods: ["GET", "POST"],
     credentials: true,
   },
-  pingTimeout: 60000,
-  pingInterval: 25000,
-  transports: ["websocket", "polling"],
-});
-
-io.on("connection", (socket) => {
-  console.log("🔥 Socket connected:", socket.id);
-
-  socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected:", socket.id);
-  });
-  socket.on("error", (err) => {
-    console.error("Socket error:", err);
-  });
 });
 
 // Initialize chat socket handler
@@ -79,28 +71,45 @@ app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: [
+          "'self'",
+          "https://beautyplug.com.ng",
+          "https://www.beautyonwheels.com.ng",
+        ],
+        connectSrc: [
+          "'self'",
+          "https://beautyplug.com.ng", // API calls
+          "wss://beautyplug.com.ng", // WebSocket
+        ],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+      },
+    },
   }),
 );
 
 // 2. Configure CORS to match Socket.IO settings
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       // Allow requests with no origin (like mobile apps or curl requests)
+//       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg =
-          "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    credentials: true,
-    optionsSuccessStatus: 200,
-  }),
-);
+//       if (allowedOrigins.indexOf(origin) === -1) {
+//         const msg =
+//           "The CORS policy for this site does not allow access from the specified Origin.";
+//         return callback(new Error(msg), false);
+//       }
+//       return callback(null, true);
+//     },
+//     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+//     credentials: true,
+//     optionsSuccessStatus: 200,
+//   }),
+// );
 
 // 3. Body parsers
 app.use(express.json());

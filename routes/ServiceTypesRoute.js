@@ -16,6 +16,6 @@ router.get("/:id", getOneServiceType);
 // Protected routes
 router.post("/addService",auth, addServiceType);
 router.put("/update/:id", auth,updateServiceType);
-router.delete("/delete/:id", deleteServiceType);
+router.delete("/delete/:id", auth, deleteServiceType);
 
 module.exports = router;

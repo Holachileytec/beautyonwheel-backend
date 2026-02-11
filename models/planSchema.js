@@ -9,7 +9,7 @@ const planSchema = new mongoose.Schema(
     },
     price: {
       type: Number,
-      rquired: true,
+      required: true,
     }
 
   },

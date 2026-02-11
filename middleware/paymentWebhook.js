@@ -1,4 +1,4 @@
-const Payment = require ("../models/Payment.js");
+const Payment = require("../models/PaymentSchema.js");
 const handlePaymentWebhook = async (req, res) => {
   try {
     const event = req.body;

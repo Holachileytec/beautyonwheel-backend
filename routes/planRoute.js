@@ -12,8 +12,8 @@ const auth = require("../middleware/authMiddleware.js");
 router.get("/allPlans", getAllPlans);
 
 // Protected routes
-router.post("/addplan", createPlan);
-router.put("/update/:id", updatePlan);
-router.delete("/:id", deletePlan);
+router.post("/addplan",auth, createPlan);
+router.put("/update/:id", auth, updatePlan);
+router.delete("/:id", auth, deletePlan);
 
 module.exports = router;

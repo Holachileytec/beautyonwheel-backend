@@ -30,30 +30,84 @@ const app = express();
 // Creating http server for Socket.io
 const server = http.createServer(app);
 
+// Define allowed origins
+const allowedOrigins = [
+  "http://beautyplug.com.ng",
+  "https://beautyplug.com.ng",
+  "http://localhost:5174",
+  "http://localhost:5173",
+];
+
 // Initialize Socket.io with CORS configuration
 const io = new Server(server, {
   cors: {
-    origin: [process.env.FRONTEND_URL || "*", "http://beautyplug.com.ng"],
-    methods: ["GET", "POST"],
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
   },
   pingTimeout: 60000,
   pingInterval: 25000,
+  transports: ["websocket", "polling"],
+});
+
+io.on("connection", (socket) => {
+  console.log("🔥 Socket connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("❌ Socket disconnected:", socket.id);
+  });
+  socket.on("error", (err) => {
+    console.error("Socket error:", err);
+  });
 });
 
 // Initialize chat socket handler
 const chatNamespace = initializeChatSocket(io);
 console.log("Chat socket initialized on /chat namespace");
 
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+});
+
 // Make io accessible in routes if needed
 app.set("io", io);
 app.set("chatNamespace", chatNamespace);
 
+// Middleware - ORDER MATTERS!
+// 1. Configure Helmet with Socket.IO-friendly settings
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  }),
+);
+
+// 2. Configure CORS to match Socket.IO settings
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    credentials: true,
+    optionsSuccessStatus: 200,
+  }),
+);
+
+// 3. Body parsers
 app.use(express.json());
-app.use(cors());
-app.use(helmet());
+app.use(express.urlencoded({ extended: true }));
+
+// 4. Cookie parser
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: "true" }));
 
 // All routes eg User,Booking,Payment,Services,Preference,Dashboard
 app.use("/api/users", UserRoutes);
@@ -69,7 +123,6 @@ app.use("/api/subservices", ServiceTypesRoutes);
 app.use("/api/plan", planRoute);
 app.use("/api/chat", chatRoute);
 
-
 // Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
@@ -79,8 +132,21 @@ app.get("/health", (req, res) => {
   });
 });
 
+// Error handling for CORS issues
+app.use((err, req, res, next) => {
+  if (err.message.includes("CORS policy")) {
+    res.status(403).json({
+      error: "CORS Error",
+      message: err.message,
+    });
+  } else {
+    next(err);
+  }
+});
+
 // Use server.listen instead of app.listen for Socket.io support
 server.listen(PORT, () => {
   console.log(`Server listening on Port: ${PORT}`);
   console.log(`Socket.io enabled with /chat namespace`);
+  console.log(`Allowed origins: ${allowedOrigins.join(", ")}`);
 });

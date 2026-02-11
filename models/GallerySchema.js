@@ -17,7 +17,7 @@ const gallerySchema = new mongoose.Schema({
   
   createdAt: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
 });
 module.exports= mongoose.model("Gallery", gallerySchema);

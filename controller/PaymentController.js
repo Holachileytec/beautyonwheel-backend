@@ -77,7 +77,7 @@ const getPayment = async (req, res) => {
     console.log("reached single transaction Api");
     const payment = await Payment.findById(req.params.id);
     if (!payment) {
-      return res.status(401).json({ message: "payment not found" });
+      return res.status(404).json({ message: "payment not found" });
     }
     res.json(payment);
   } catch (error) {
@@ -89,7 +89,7 @@ const getAllPayment = async (req, res) => {
   try {
     const payment = await Payment.find();
     if (!payment) {
-      return res.status(401).json({ message: "payment not found" });
+      return res.status(404).json({ message: "payment not found" });
     }
     res.status(200).json(payment);
   } catch (error) {

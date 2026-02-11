@@ -52,7 +52,7 @@ const allBookings = async (req, res) => {
     const role = req.user?.role;
     let bookings;
     switch (role) {
-      case "Admin":
+      case "admin":
         console.log("Admin role detected");
         bookings = await Booking.find()
           .populate("client", "name email")
@@ -60,16 +60,16 @@ const allBookings = async (req, res) => {
           .populate("service", "name price duration");
         break;
 
-      case "Client":
+      case "client":
         console.log("Client role detected");
-        bookings = await Booking.find({ client: req.user._id })
+        bookings = await Booking.find({ client: req.userId })
           .populate("beautician", "name email")
           .populate("service", "name price duration");
         break;
 
-      case "Beautician":
+      case "beautician":
         console.log("Beautician role detected");
-        bookings = await Booking.find({ beautician: req.user._id })
+        bookings = await Booking.find({ beautician: req.userId})
           .populate("client", "name email")
           .populate("service", "name price duration");
         break;
@@ -101,7 +101,7 @@ const getSingleBooking = async (req, res) => {
     }
 
     return res
-      .status(201)
+      .status(200)
       .json({ message: "User apppointment booked successfully", booking });
   } catch (error) {
     console.log("something went wrong", error);
@@ -115,7 +115,7 @@ const updateBooking = async (req, res) => {
       new: true,
     });
     if (!booking) {
-      res.status(400).json({ message: "Booking not found" });
+      return res.status(400).json({ message: "Booking not found" });
     }
     res.status(200).json({ message: "User Booking  Updated" });
   } catch (error) {
@@ -129,9 +129,9 @@ const deleteBooking = async (req, res) => {
     const deleted = await Booking.findByIdAndDelete(req.params.id);
     if (!deleted) {
       console.log("booking not found", deleted);
-      res.status(400).json({ message: "booking not deleted", deleted });
+      return res.status(400).json({ message: "booking not deleted", deleted });
     }
-    res.status(200).json({ message: "Booking deleted" });
+    return res.status(200).json({ message: "Booking deleted" });
   } catch (error) {
     console.log("error deleting booking", error);
     res.status(500).json({ message: "internal server error", error });

@@ -49,16 +49,15 @@ const createService = async (req, res) => {
 
  const getSingleService = async (req, res) => {
   try {
-    const service = await Service.findById(req.params.id).populate(
-      "name price"
-    );
+    const service = await Service.findById(req.params.id);
+    
     if (!service) {
-      res.status(404).json({ message: `Service not found` });
+      return res.status(404).json({ message: `Service not found` });
     }
     res.status(200).json(service);
   } catch (error) {
     console.log(`something mssing ${error}`);
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -73,9 +72,9 @@ const createService = async (req, res) => {
     );
     if (!updateService) {
       console.log(`Service not found ${updateService}`);
-      res.status(404).json({ message: "Service not found" });
+     return res.status(404).json({ message: "Service not found" });
     }
-    res
+    return res
       .status(200)
       .json({ message: "Service Updated Successfully", updateService });
   } catch (error) {
@@ -90,9 +89,9 @@ const createService = async (req, res) => {
   try {
     const deleted = await Service.findByIdAndDelete(req.params.id);
     if (!deleted) {
-      res.status(404).json({ message: "Service not found" });
+    return  res.status(404).json({ message: "Service not found" });
     }
-    res.status(200).json({ message: `Service deleted Sucessfully` });
+    return res.status(200).json({ message: `Service deleted Sucessfully` });
   } catch (error) {
     console.log(`Service delete error:`, error);
     res.status(500).json({ message: ` something went wrong ${error}` });

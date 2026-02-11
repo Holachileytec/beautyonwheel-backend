@@ -14,8 +14,8 @@ router.get("/all", getAllServices);
 router.get("/:id", getSingleService);
 
 // Protected routes (admin/beautician)
-router.post("/create", createService);
+router.post("/create",auth, createService);
 router.put("/updateServ/:id", auth, updateService);
-router.delete("/delete/:id", deleteService);
+router.delete("/delete/:id",auth, deleteService);
 
 module.exports = router;

@@ -15,7 +15,7 @@ router.get("/allbeauticians", getBeauticians);
 // Protected routes
 router.put("/profile-update", auth, updateBeauticianProfile);
 router.post("/add-service", auth, addService);
-router.delete("/delete/:id", deleteBeautician);
+router.delete("/delete/:id",auth, deleteBeautician);
 router.get("/:id", getBeauticianProfile);
 
 module.exports = router;

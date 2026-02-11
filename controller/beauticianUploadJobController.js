@@ -23,7 +23,7 @@ const Gallery = require ("../models/GallerySchema.js");
 
  const getAllGalleryItems = async (req, res) => {
   try {
-    const galleryItems = await Gallery.find().sort({ createAt: -1 });
+    const galleryItems = await Gallery.find().sort({ createdAt: -1 });
     res.status(200).json(galleryItems);
   } catch (error) {
     console.log("something went wrong when fetching gallery items", error);

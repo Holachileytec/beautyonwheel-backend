@@ -14,8 +14,8 @@ router.get("/allService", getAllServiceTypes);
 router.get("/:id", getOneServiceType);
 
 // Protected routes
-router.post("/addService", addServiceType);
-router.put("/update/:id", updateServiceType);
+router.post("/addService",auth, addServiceType);
+router.put("/update/:id", auth,updateServiceType);
 router.delete("/delete/:id", deleteServiceType);
 
 module.exports = router;

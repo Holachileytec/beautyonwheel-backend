@@ -15,10 +15,10 @@ router.post("/signup", registerUser);
 router.post("/login", loginUser);
 
 // Protected routes
-router.get("/getAllUsers", getAllUsers);
+router.get("/getAllUsers", auth, getAllUsers);
 router.get("/:id", auth, getSingleUser);
 router.put("/:id", auth, updateUser);
 router.put("/userUpdate/:id", auth, updateUser);
-router.delete("/:id", deleteUser);
+router.delete("/delete/:id", auth, deleteUser);
 
 module.exports = router;

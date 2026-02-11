@@ -1,46 +1,80 @@
 const Admin = require("../models/AdminSchema.js");
 
-// const User = require("./models/User");
-
-// const createAdminIfNotFound = async () => {
-//   const adminExists = await User.findOne({ role: "admin" });
-
-//   if (!adminExists) {
-//     await User.create({
-//       name: "Super Admin",
-//       email: "genconsolution@gmail.com",
-//       password: "Gen@1949", // hash this
-//       role: "admin",
-//     });
-
-//     console.log("Admin user created");
-//   }
-// };
-
-const adminUpdateProfile = async (req, res) => {
-  try {
-    const admin = await Admin.findOneAndUpdate({ user: req.userId }, req.body, {
-      new: true,
-    });
-    if (!admin) {
-      console.log("error occur");
-
-      return res.status(404).json({ message: "Admin not found" });
-    }
-    res.json({ message: "Admin Profile Updated", admin });
-  } catch (error) {
-    console.log("something went wrong", error);
-    res.status(500).json({ message: "internal server error", error });
-  }
-};
+/**
+ * Get Admin Profile
+ * GET /api/admins/profile
+ * Requires: auth + isAdmin middleware
+ */
 const getAdmin = async (req, res) => {
   try {
-    const admin = await Admin.findOne({ user: req.userId }).populate("user");
-    res.status(200).json({ message: "Admin fetched successfully", admin });
+    const admin = await Admin.findOne({ user: req.userId }).populate("user", "-password");
+    
+    if (!admin) {
+      // Admin profile doesn't exist - this shouldn't happen if registration worked
+      return res.status(404).json({ 
+        message: "Admin profile not found. Please contact support.",
+        userId: req.userId
+      });
+    }
+    
+    res.status(200).json({ 
+      message: "Admin fetched successfully", 
+      admin 
+    });
   } catch (error) {
-    console.log("something went wrong", error);
-    res.status(500).json({ message: "internal server error", error });
+    console.error("getAdmin error:", error);
+    res.status(500).json({ 
+      message: "Internal server error", 
+      error: error.message 
+    });
   }
 };
 
-module.exports = { adminUpdateProfile, getAdmin};
+/**
+ * Update Admin Profile
+ * PUT /api/admins/profile
+ * Requires: auth + isAdmin middleware
+ */
+const adminUpdateProfile = async (req, res) => {
+  try {
+    // Validate that there's something to update
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({ message: "No update data provided" });
+    }
+
+    const admin = await Admin.findOneAndUpdate(
+      { user: req.userId }, 
+      req.body, 
+      { new: true, runValidators: true }
+    ).populate("user", "-password");
+    
+    if (!admin) {
+      return res.status(404).json({ 
+        message: "Admin profile not found",
+        userId: req.userId
+      });
+    }
+    
+    res.status(200).json({ 
+      message: "Admin profile updated successfully", 
+      admin 
+    });
+  } catch (error) {
+    console.error("adminUpdateProfile error:", error);
+    
+    // Handle validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({ 
+        message: "Validation error", 
+        errors: error.errors 
+      });
+    }
+    
+    res.status(500).json({ 
+      message: "Internal server error", 
+      error: error.message 
+    });
+  }
+};
+
+module.exports = { adminUpdateProfile, getAdmin };

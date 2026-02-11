@@ -29,7 +29,7 @@ const Beautician = require ("../models/BeauticianSchema.js");
 
  const addService = async (req, res) => {
   try {
-    const beautician = await Beautician.findOne({ user: req.user.id });
+    const beautician = await Beautician.findOne({ user: req.userId });
     beautician.services.push(req.body.serviceId);
     await beautician.save();
 

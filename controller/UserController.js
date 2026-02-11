@@ -18,12 +18,28 @@ const registerUser = async (req, res) => {
     if (!name || !email || !password || !role || !phone) {
       return res.status(400).json({ message: "All fields required" });
     }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+    // Password strength validation
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
+    }
+    // Normalize role
+    const normalizedRole = role.toLowerCase();
+
     // checking if user already exists
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
       return res.status(409).json({ message: "User already exists" });
     }
+
     // hasahed password
     const hashedPassword = await bcrypt.hash(password, 10); // hashing pwd with bcrypt
 
@@ -32,32 +48,33 @@ const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role,
+      role: normalizedRole,
       phone,
     });
 
     // create linked profile base on a role
     let profile = null;
 
-    if (role.toLowerCase() === "client") {
+    if (normalizedRole === "client") {
       profile = await Client.create({
         user: newUser._id,
         favouriteService: [],
         theme: "light",
         notification: "true",
       });
-    } else if (role.toLowerCase() === "beautician") {
+    } else if (normalizedRole === "beautician") {
       profile = await Beautician.create({
         user: newUser._id,
+        services: [],
         address: "unknown",
         bio: "",
         rating: 0,
         experienceYears: 0,
-        specialties: "",
+        specialties: [],
         notification: true,
         theme: "light",
       });
-    } else if (role.toLowerCase() === "admin") {
+    } else if (normalizedRole === "admin") {
       profile = await Admin.create({
         user: newUser._id,
         address: "",
@@ -65,9 +82,11 @@ const registerUser = async (req, res) => {
     } else {
       return res.status(400).json({ message: "This role does not exist" });
     }
+    // Exclude password from response
+    const { password: _, ...userWithoutPassword } = newUser._doc;
     res.status(201).json({
       message: "User registered successfully",
-      newUser,
+      user: userWithoutPassword,
       profile: profile || null,
     });
   } catch (error) {
@@ -107,7 +126,7 @@ const loginUser = async (req, res) => {
     // generating jwt token
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      process.env.Jwt_SECRET,
+      process.env.JWT_SECRET,
       {
         // generating jwt token
         expiresIn: "7d",
@@ -132,7 +151,7 @@ const getAllUsers = async (req, res) => {
       .status(200)
       .json({ message: `All Users fetched successfully, `, users });
   } catch (error) {
-    res.staus(500).json({ message: "failed to fetched the Users", error });
+    res.status(500).json({ message: "failed to fetched the Users", error });
   }
 };
 
@@ -159,7 +178,7 @@ const updateUser = async (req, res) => {
 
     // check if user exists
     if (!user) {
-      res.status(440).json({ message: "User not Found" });
+      return res.status(404).json({ message: "User not Found" });
     }
 
     // update password if provided
@@ -186,14 +205,12 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    return res.status(200).json({ message: "User deleted successfully" });
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to delete user", error });
+    res.status(500).json({ message: "failed to delete user", error });
   }
 };
 

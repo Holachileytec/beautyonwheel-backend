@@ -33,15 +33,18 @@ const Client = require("../models/ClientSchema.js") ;
 //   }
 // };
 
- const getClientProfile = async (req, res) => {
+const getClientProfile = async (req, res) => {
   try {
-    const client = await Client.findOne({ user: user.id }).populate("user");
+    const client = await Client.findOne({ user: req.userId }).populate("user", "-password");
+    if (!client) {
+      return res.status(404).json({ message: "Client profile not found" });
+    }
     res
       .status(200)
       .json({ message: "Client Profile fetched successfully", client });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "internal error issue", error });
+    console.error("getClientProfile error:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 

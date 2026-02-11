@@ -6,7 +6,7 @@ const handlePaymentWebhook = async (req, res) => {
       const data = event.data;
 
       await Payment.findOneAndUpdate(
-        { transactionId: data.refrence },
+        { transactionId: data.reference },
         { status: "success" },
         { amount: data.amount / 100 },
         { new: true }

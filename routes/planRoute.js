@@ -12,7 +12,7 @@ const auth = require("../middleware/authMiddleware.js");
 router.get("/allPlans", getAllPlans);
 
 // Protected routes
-router.post("/addplan",auth, createPlan);
+router.post("/addplan", createPlan);
 router.put("/update/:id", auth, updatePlan);
 router.delete("/:id", auth, deletePlan);
 

@@ -91,6 +91,16 @@ app.use(
   }),
 );
 
+// Configure CORS
+app.use(
+  cors({
+    origin: "https://www.beautyonwheels.com.ng",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
 // 2. Configure CORS to match Socket.IO settings
 // app.use(
 //   cors({

@@ -76,12 +76,14 @@ app.use(
         defaultSrc: [
           "'self'",
           "https://beautyplug.com.ng",
-          "https://www.beautyonwheels.com.ng",
+          "https://www.beautyplug.com.ng", // Fix typo
         ],
         connectSrc: [
           "'self'",
-          "https://beautyplug.com.ng", // API calls
-          "wss://beautyplug.com.ng", // WebSocket
+          "https://beautyplug.com.ng",
+          "https://www.beautyplug.com.ng", // Add www version
+          "wss://beautyplug.com.ng",
+          "wss://www.beautyplug.com.ng", // Add www WebSocket
         ],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
@@ -90,9 +92,6 @@ app.use(
     },
   }),
 );
-
-
-
 // 2. Configure CORS to match Socket.IO settings
 app.use(
   cors({

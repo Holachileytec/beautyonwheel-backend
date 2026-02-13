@@ -37,12 +37,12 @@ const allowedOrigins = [
   "http://beautyplug.com.ng",
 ];
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  }),
-);
+// app.use(
+//   cors({
+//     origin: allowedOrigins,
+//     credentials: true,
+//   }),
+// );
 
 // Enable CORS for Socket.IO
 const io = new Server(server, {
@@ -91,35 +91,27 @@ app.use(
   }),
 );
 
-// Configure CORS
-app.use(
-  cors({
-    origin: "https://www.beautyonwheels.com.ng",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
+
 
 // 2. Configure CORS to match Socket.IO settings
-// app.use(
-//   cors({
-//     origin: function (origin, callback) {
-//       // Allow requests with no origin (like mobile apps or curl requests)
-//       if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
 
-//       if (allowedOrigins.indexOf(origin) === -1) {
-//         const msg =
-//           "The CORS policy for this site does not allow access from the specified Origin.";
-//         return callback(new Error(msg), false);
-//       }
-//       return callback(null, true);
-//     },
-//     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-//     credentials: true,
-//     optionsSuccessStatus: 200,
-//   }),
-// );
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    credentials: true,
+    optionsSuccessStatus: 200,
+  }),
+);
 
 // 3. Body parsers
 app.use(express.json());

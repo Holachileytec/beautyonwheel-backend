@@ -24,7 +24,7 @@ const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
 connectDB();
 console.log("DB_URI from env:", process.env.mongodb_url);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8000;
 const app = express();
 const server = http.createServer(app);
 
@@ -32,17 +32,19 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
-  "https://beautyplug.com.ng", // ADD THIS
-  "https://www.beautyplug.com.ng", // ADD THIS
-  "http://beautyplug.com.ng",
+  "http://localhost:8000",  // Add this for self-reference
+  "https://beautyonwheels.com.ng",
+  "https://www.beautyonwheels.com.ng",
+  "https://beautyplug.com.ng",
+  "https://www.beautyplug.com.ng",// ADD THIS
 ];
 
-// app.use(
-//   cors({
-//     origin: allowedOrigins,
-//     credentials: true,
-//   }),
-// );
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  }),
+);
 
 // Enable CORS for Socket.IO
 const io = new Server(server, {
@@ -75,15 +77,14 @@ app.use(
       directives: {
         defaultSrc: [
           "'self'",
-          "https://beautyplug.com.ng",
-          "https://www.beautyplug.com.ng", // Fix typo
+          "https://beautyplug.com.ng", // Backend
+          "https://beautyonwheels.com.ng", // Frontend
+          "https://www.beautyonwheels.com.ng", // Frontend with www
         ],
         connectSrc: [
           "'self'",
-          "https://beautyplug.com.ng",
-          "https://www.beautyplug.com.ng", // Add www version
-          "wss://beautyplug.com.ng",
-          "wss://www.beautyplug.com.ng", // Add www WebSocket
+          "https://beautyplug.com.ng", // API calls to backend
+          "wss://beautyplug.com.ng", // WebSocket to backend
         ],
         scriptSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
@@ -93,24 +94,43 @@ app.use(
   }),
 );
 // 2. Configure CORS to match Socket.IO settings
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
 
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg =
-          "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    credentials: true,
-    optionsSuccessStatus: 200,
-  }),
-);
+// Add at the top
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+// Then use conditional helmet
+if (!isDevelopment) {
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      // ... rest of your production helmet config
+    })
+  );
+} else {
+  // Simpler helmet for development
+  app.use(helmet({ 
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: false 
+  }));
+}
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       // Allow requests with no origin (like mobile apps or curl requests)
+//       if (!origin) return callback(null, true);
+
+//       if (allowedOrigins.indexOf(origin) === -1) {
+//         const msg =
+//           "The CORS policy for this site does not allow access from the specified Origin.";
+//         return callback(new Error(msg), false);
+//       }
+//       return callback(null, true);
+//     },
+//     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+//     credentials: true,
+//     optionsSuccessStatus: 200,
+//   }),
+// );
 
 // 3. Body parsers
 app.use(express.json());

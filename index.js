@@ -34,14 +34,19 @@ const isDevelopment = process.env.NODE_ENV === "development";
 
 // Allowed origins for CORS
 const allowedOrigins = isDevelopment
-  ? ["http://localhost:5173", "http://localhost:3000"]
+  ? [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:3000",
+    ]
   : [
       "https://beautyonwheels.com.ng",
       "https://www.beautyonwheels.com.ng",
       "https://beautyplug.com.ng",
       "https://www.beautyplug.com.ng",
     ];
-    
+
 console.log("NODE_ENV:", process.env.NODE_ENV);
 console.log("Current Origins:", allowedOrigins);
 
@@ -102,7 +107,7 @@ app.use(
 );
 
 //3. Body parsers
- app.use(express.json());
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 4. Cookie parser

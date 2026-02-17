@@ -28,6 +28,7 @@ const PORT = process.env.PORT || 8000;
 const app = express();
 const server = http.createServer(app);
 
+<<<<<<< HEAD
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -38,34 +39,117 @@ const allowedOrigins = [
   "https://beautyplug.com.ng",
   "https://www.beautyplug.com.ng",// ADD THIS
 ];
+=======
+// Environment check
+>>>>>>> 5320444 (newky commited to remove env)
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
+// Allowed origins for CORS
+const allowedOrigins = isDevelopment
+  ? [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:3000",
+    ]
+  : [
+      "https://beautyonwheels.com.ng",
+      "https://www.beautyonwheels.com.ng",
+      "https://beautyplug.com.ng",
+      "https://www.beautyplug.com.ng",
+    ];
+
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("Current Origins:", allowedOrigins);
+
+// Middleware - ORDER MATTERS!
+
+// 1. Configure Helmet with environment-specific settings
+if (!isDevelopment) {
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: [
+            "'self'",
+            "https://beautyonwheels.com.ng",
+            "https://www.beautyonwheels.com.ng",
+          ],
+          connectSrc: [
+            "'self'",
+            "https://beautyplug.com.ng",
+            "wss://beautyplug.com.ng",
+            "https://api.paystack.co",
+          ],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+        },
+      },
+    }),
+  );
+} else {
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: false,
+    }),
+  );
+}
+
+// 2. CORS configuration
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.error(`CORS Blocked: ${origin} is not in`, allowedOrigins);
+        callback(null, false);
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
+    optionsSuccessStatus: 200,
   }),
 );
 
-// Enable CORS for Socket.IO
+//3. Body parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 4. Cookie parser
+// app.use(cookieParser());
+
+// Socket.IO setup with CORS
+console.log("Current Origins:", allowedOrigins);
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins, // Must include your production frontend
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
+  allowEIO3: true,
 });
 
 // Initialize chat socket handler
 const chatNamespace = initializeChatSocket(io);
 console.log("Chat socket initialized on /chat namespace");
 
+// Socket.IO connection handler
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 });
 
-// Make io accessible in routes if needed
+// Make io accessible in routes
 app.set("io", io);
 app.set("chatNamespace", chatNamespace);
+<<<<<<< HEAD
 
 // Middleware - ORDER MATTERS!
 // 1. Configure Helmet with Socket.IO-friendly settings
@@ -132,6 +216,8 @@ if (!isDevelopment) {
 //   }),
 // );
 
+=======
+>>>>>>> 5320444 (newky commited to remove env)
 // 3. Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

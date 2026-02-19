@@ -5,7 +5,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const helmet = require("helmet");
 const UserRoutes = require("./routes/UserRoutes.js");
-const dotenv = require("dotenv").config();
+require("dotenv").config();
 const connectDB = require("./config/db.js");
 const ServiceRoutes = require("./routes/ServicesRoute.js");
 const BookingRoutes = require("./routes/BookingRoute.js");
@@ -20,6 +20,7 @@ const ServiceTypesRoutes = require("./routes/ServiceTypesRoute.js");
 const planRoute = require("./routes/planRoute.js");
 const chatRoute = require("./routes/chatRoute.js");
 const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
+
 
 connectDB();
 console.log("DB_URI from env:", process.env.mongodb_url);

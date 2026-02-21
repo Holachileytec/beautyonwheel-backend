@@ -21,13 +21,14 @@ const planRoute = require("./routes/planRoute.js");
 const chatRoute = require("./routes/chatRoute.js");
 const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
 
-
 connectDB();
 console.log("DB_URI from env:", process.env.mongodb_url);
 
 const PORT = process.env.PORT || 8000;
 const app = express();
 const server = http.createServer(app);
+
+
 
 // ============================================
 // ENVIRONMENT CHECK
@@ -50,9 +51,9 @@ console.log("isDevelopment:", isDevelopment);
 const allowedOrigins = [
   // --- Development ---
   "http://localhost:5173",
-  "http://localhost:5174",   
+  "http://localhost:5174",
   "http://127.0.0.1:5173",
-  "http://127.0.0.1:5174",  
+  "http://127.0.0.1:5174",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   // --- Production ---
@@ -76,7 +77,7 @@ const corsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // FIX #3: Reject with an Error object so Express CORS sends proper 403.
+      // Reject with an Error object so Express CORS sends proper 403.
       // Using callback(null, false) causes a silent failure with no CORS headers,
       // which the browser reports as a network error rather than a CORS error.
       console.error(`❌ CORS Blocked: "${origin}" not in allowed list`);
@@ -117,14 +118,14 @@ if (!isDevelopment) {
           imgSrc: ["'self'", "data:", "https:"],
         },
       },
-    })
+    }),
   );
 } else {
   app.use(
     helmet({
       contentSecurityPolicy: false,
       crossOriginResourcePolicy: false,
-    })
+    }),
   );
 }
 
@@ -136,11 +137,11 @@ app.use(cors(corsOptions));
 // and block the actual request before it's even sent.
 app.options(/.*/, cors(corsOptions));
 
-// 3. Body parsers  
+// 3. Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 4. Cookie parser  
+// 4. Cookie parser
 app.use(cookieParser());
 
 // ============================================
@@ -246,5 +247,7 @@ server.listen(PORT, () => {
   console.log(`\n🚀 Server listening on Port: ${PORT}`);
   console.log(`📡 Socket.IO enabled with /chat namespace`);
   console.log(`🌐 Allowed origins:\n   ${allowedOrigins.join("\n   ")}`);
-  console.log(`🔧 Environment: ${process.env.NODE_ENV || "not set (defaulting to dev)"}\n`);
+  console.log(
+    `🔧 Environment: ${process.env.NODE_ENV || "not set (defaulting to dev)"}\n`,
+  );
 });

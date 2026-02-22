@@ -16,7 +16,7 @@ const createBooking = async (req, res) => {
 
     const { service, address, city, note, date, status } = req.body;
 
-    if (!clientId || !service || !address || !date) {
+    if (!address || !clientId || !service) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -69,7 +69,7 @@ const allBookings = async (req, res) => {
 
       case "beautician":
         console.log("Beautician role detected");
-        bookings = await Booking.find({ beautician: req.userId})
+        bookings = await Booking.find({ beautician: req.userId })
           .populate("client", "name email")
           .populate("service", "name price duration");
         break;

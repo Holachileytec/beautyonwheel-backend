@@ -4,6 +4,7 @@ const {
   getBeauticianProfile,
   getBeauticians,
   updateBeauticianProfile,
+  updateBeautician,
   addService,
   deleteBeautician,
 } = require("../controller/BeauticianController.js");
@@ -17,5 +18,6 @@ router.put("/profile-update", auth, updateBeauticianProfile);
 router.post("/add-service", auth, addService);
 router.delete("/delete/:id", auth, deleteBeautician);
 router.get("/beautician/:id", getBeauticianProfile);
+router.put("/Bupdate/:id", updateBeautician);
 
 module.exports = router;

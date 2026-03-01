@@ -7,14 +7,29 @@ const createBooking = async (req, res) => {
   try {
     let clientId;
 
-    // Ensure your JWT token actually contains the 'role' and 'id'
+    // Ensure req.user exists
+    if (!req.user)
+      return res.status(401).json({ message: "User not authenticated" });
+
+    // Client role: get the ID from JWT
     if (req.user.role === "client") {
       clientId = req.user.id || req.user._id;
-    } else if (req.user.role === "admin") {
-      clientId = req.body.client;
     }
 
-    const { service, address, city, note, date, status } = req.body;
+    // Admin role: get the ID from req.userId
+    // req.body.clientId may be missing or is fake ..better request from JWT
+    else if (req.user.role === "admin") {
+      clientId = req.userId;
+    }
+
+    // If still undefined, throw error
+    if (!clientId) {
+      console.log("Cliend Id is requreide",clientId)
+      return res.status(400).json({ message: "Client ID is required" });
+    }
+
+    const { service, address, city, note, date, status, phone } = req.body;
+    console.log("Debug CreateBooking:", { address, clientId, service });
 
     if (!address || !clientId || !service) {
       return res.status(400).json({ message: "Missing required fields" });

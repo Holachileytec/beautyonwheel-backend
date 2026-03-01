@@ -50,6 +50,18 @@ const addService = async (req, res) => {
     res.status(500).json({ message: "internal error", error });
   }
 };
+const getBeauticianByUserId = async (req, res) => {
+  try {
+    const beautician = await Beautician.findOne({ user: req.params.userId });
+    if (!beautician) {
+      return res.status(404).json({ message: "Beautician profile not found" });
+    }
+    res.status(200).json({ beautician });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
 
 const getBeauticianProfile = async (req, res) => {
   try {
@@ -98,6 +110,7 @@ const deleteBeautician = async (req, res) => {
 module.exports = {
   getBeauticianProfile,
   getBeauticians,
+  getBeauticianByUserId,
   updateBeauticianProfile,
   addService,
   deleteBeautician,

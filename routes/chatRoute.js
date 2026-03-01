@@ -14,6 +14,7 @@ const {
   assignSessionToAgent,
   transferSession,
   // Admin endpoints
+  getAllSessions,
   getChatStats,
   cleanupExpiredSessions,
 } = require("../controller/chatController.js");
@@ -36,6 +37,9 @@ router.post("/sessions/:sessionId/messages", saveMessage);
 
 // Request human agent (switches from AI to waiting queue)
 router.post("/sessions/:sessionId/request-agent", requestHumanAgent);
+
+//get all the session
+router.get("/admin/sessions", auth, getAllSessions);
 
 // Close a session
 router.post("/sessions/:sessionId/close", closeSession);

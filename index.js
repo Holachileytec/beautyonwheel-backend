@@ -28,8 +28,6 @@ const PORT = process.env.PORT || 8000;
 const app = express();
 const server = http.createServer(app);
 
-
-
 // ============================================
 // ENVIRONMENT CHECK
 // ============================================
@@ -188,6 +186,7 @@ app.use("/api/bookings", BookingRoutes);
 app.use("/api/admin", AdminRoutes);
 app.use("/api/payments", PaymentRoute);
 app.use("/api/paystack", paystackRoute);
+// app.use("/webhooks/paystack", paystackRoutes);
 app.use("/api/gallery", GalleryRoute);
 app.use("/api/subservices", ServiceTypesRoutes);
 app.use("/api/plan", planRoute);
@@ -242,7 +241,6 @@ app.use((err, req, res, next) => {
 // ============================================
 // START SERVER
 // ============================================
-
 server.listen(PORT, () => {
   console.log(`\n🚀 Server listening on Port: ${PORT}`);
   console.log(`📡 Socket.IO enabled with /chat namespace`);

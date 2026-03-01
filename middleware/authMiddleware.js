@@ -1,4 +1,4 @@
-const jwt = require ("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 const auth = (req, res, next) => {
   const header = req.header("Authorization");
@@ -13,8 +13,10 @@ const auth = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
-    req.user=decoded;
+
+    req.user = decoded;
+    req.userId = decoded.id || decoded._id || decoded.userId;
+    console.log("decoded:", decoded);
     next();
   } catch (err) {
     console.log("error:", err);
@@ -22,4 +24,4 @@ const auth = (req, res, next) => {
     res.status(401).json({ message: "Invalid token", err });
   }
 };
-module.exports=auth;
+module.exports = auth;

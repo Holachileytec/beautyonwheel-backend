@@ -1,10 +1,10 @@
-const Gallery = require ("../models/GallerySchema.js");
+const Gallery = require("../models/GallerySchema.js");
 
 //logic for uploading a job to gallery
- const beauticianUploadJob = async (req, res) => {
+const beauticianUploadJob = async (req, res) => {
   try {
     const { beauticianId, imageUrl, description } = req.body;
-    if (!beauticianId || !imageUrl || !description) {
+    if (!imageUrl || !description) {
       return res.status(404).json({ message: "fields are required" });
     }
     const newGalleryItem = await Gallery.create({
@@ -21,7 +21,7 @@ const Gallery = require ("../models/GallerySchema.js");
   }
 };
 
- const getAllGalleryItems = async (req, res) => {
+const getAllGalleryItems = async (req, res) => {
   try {
     const galleryItems = await Gallery.find().sort({ createdAt: -1 });
     res.status(200).json(galleryItems);
@@ -31,5 +31,4 @@ const Gallery = require ("../models/GallerySchema.js");
   }
 };
 
-
-module.exports={getAllGalleryItems,beauticianUploadJob}
+module.exports = { getAllGalleryItems, beauticianUploadJob };

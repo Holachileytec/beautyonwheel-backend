@@ -1,5 +1,7 @@
 const ChatSession = require("../models/ChatSessionSchema");
 const ChatMessage = require("../models/ChatMessageSchema");
+// At the top of the file with other requires
+const Admin = require("../models/AdminSchema");
 
 /**
  * Chat Socket Handler
@@ -39,9 +41,12 @@ function initializeChatSocket(io) {
   });
 
   // Cleanup interval - check for stale connections every 5 minutes
-  setInterval(() => {
-    cleanupStaleConnections(chatNamespace);
-  }, 5 * 60 * 1000);
+  setInterval(
+    () => {
+      cleanupStaleConnections(chatNamespace);
+    },
+    5 * 60 * 1000,
+  );
 
   return chatNamespace;
 }
@@ -64,17 +69,23 @@ function handleUserConnection(socket, sessionId, namespace) {
   initializeSession(socket, sessionId);
 
   // User-specific event handlers
-  socket.on("user:message", (data) => handleUserMessage(socket, data, namespace));
+  socket.on("user:message", (data) =>
+    handleUserMessage(socket, data, namespace),
+  );
   socket.on("user:typing", (data) => handleUserTyping(socket, data, namespace));
-  socket.on("user:requestAgent", (data) => handleRequestAgent(socket, data, namespace));
-  socket.on("user:endHumanChat", (data) => handleEndHumanChat(socket, data, namespace));
+  socket.on("user:requestAgent", (data) =>
+    handleRequestAgent(socket, data, namespace),
+  );
+  socket.on("user:endHumanChat", (data) =>
+    handleEndHumanChat(socket, data, namespace),
+  );
   socket.on("user:updateInfo", (data) => handleUpdateUserInfo(socket, data));
 
   // Handle disconnect
   socket.on("disconnect", () => {
     console.log(`User disconnected: sessionId=${sessionId}`);
     activeConnections.delete(sessionId);
-    
+
     // Notify assigned agent if any
     notifyAgentOfUserStatus(sessionId, "offline", namespace);
   });
@@ -107,17 +118,68 @@ function handleAgentConnection(socket, agentId, namespace) {
   sendAgentActiveSessions(socket, agentId);
 
   // Agent-specific event handlers
-  socket.on("agent:message", (data) => handleAgentMessage(socket, data, namespace));
-  socket.on("agent:typing", (data) => handleAgentTyping(socket, data, namespace));
-  socket.on("agent:acceptSession", (data) => handleAcceptSession(socket, data, namespace));
-  socket.on("agent:leaveSession", (data) => handleAgentLeaveSession(socket, data, namespace));
-  socket.on("agent:transferSession", (data) => handleTransferSession(socket, data, namespace));
+  socket.on("agent:message", (data) =>
+    handleAgentMessage(socket, data, namespace),
+  );
+  socket.on("agent:typing", (data) =>
+    handleAgentTyping(socket, data, namespace),
+  );
+  socket.on("agent:acceptSession", (data) =>
+    handleAcceptSession(socket, data, namespace),
+  );
+
+  socket.on("agent:closeSession", (data) =>
+    handleCloseSession(socket, data, namespace),
+  );
+  socket.on("agent:leaveSession", (data) =>
+    handleAgentLeaveSession(socket, data, namespace),
+  );
+  socket.on("agent:transferSession", (data) =>
+    handleTransferSession(socket, data, namespace),
+  );
+  async function handleCloseSession(socket, data, namespace) {
+    try {
+      const { sessionId } = data;
+      const agentId = socket.agentId;
+
+      const session = await ChatSession.findOne({ sessionId });
+      if (!session || session.assignedAgent?.toString() !== agentId) {
+        socket.emit("error", { message: "Not authorized" });
+        return;
+      }
+
+      // Close the session
+      await session.closeSession("agent");
+
+      // Remove from agent tracking
+      const sessions = agentSessions.get(agentId);
+      if (sessions) sessions.delete(sessionId);
+
+      socket.leave(`session:${sessionId}`);
+
+      // Notify user
+      const userSocket = activeConnections.get(sessionId);
+      if (userSocket) {
+        userSocket.emit("session:closed", {
+          message: "Session closed by agent",
+        });
+      }
+
+      socket.emit("session:closed", { sessionId });
+
+      // Update all agents
+      namespace.to("agents").emit("session:removed", { sessionId });
+    } catch (error) {
+      console.error("Handle close session error:", error);
+      socket.emit("error", { message: "Failed to close session" });
+    }
+  }
 
   // Handle disconnect
   socket.on("disconnect", () => {
     console.log(`Agent disconnected: agentId=${agentId}`);
     agentConnections.delete(agentId);
-    
+
     // Notify all active sessions
     const sessions = agentSessions.get(agentId);
     if (sessions) {
@@ -168,7 +230,9 @@ async function initializeSession(socket, sessionId) {
 
     // If session has assigned agent, check if agent is online
     if (session.assignedAgent && session.mode === "human") {
-      const agentSocket = agentConnections.get(session.assignedAgent.toString());
+      const agentSocket = agentConnections.get(
+        session.assignedAgent.toString(),
+      );
       if (agentSocket) {
         socket.emit("agent:connected", session.agentInfo);
         agentSocket.emit("user:reconnected", { sessionId });
@@ -221,7 +285,9 @@ async function handleUserMessage(socket, data, namespace) {
 
     // If in human mode, forward to agent
     if (session.mode === "human" && session.assignedAgent) {
-      const agentSocket = agentConnections.get(session.assignedAgent.toString());
+      const agentSocket = agentConnections.get(
+        session.assignedAgent.toString(),
+      );
       if (agentSocket) {
         agentSocket.emit("user:message", {
           sessionId,
@@ -251,7 +317,9 @@ async function handleUserTyping(socket, data, namespace) {
     const session = await ChatSession.findOne({ sessionId });
 
     if (session?.mode === "human" && session.assignedAgent) {
-      const agentSocket = agentConnections.get(session.assignedAgent.toString());
+      const agentSocket = agentConnections.get(
+        session.assignedAgent.toString(),
+      );
       if (agentSocket) {
         agentSocket.emit("user:typing", { sessionId, isTyping });
       }
@@ -277,6 +345,7 @@ async function handleRequestAgent(socket, data, namespace) {
 
     if (userInfo) {
       session.guestInfo = { ...session.guestInfo, ...userInfo };
+      session.userType = userInfo.userType || null;
     }
 
     // Calculate queue position
@@ -299,7 +368,9 @@ async function handleRequestAgent(socket, data, namespace) {
       requestedAt: session.humanRequestedAt,
     });
 
-    console.log(`Agent requested for session ${sessionId}, queue position: ${session.queuePosition}`);
+    console.log(
+      `Agent requested for session ${sessionId}, queue position: ${session.queuePosition}`,
+    );
   } catch (error) {
     console.error("Handle request agent error:", error);
     socket.emit("error", { message: "Failed to request agent" });
@@ -327,7 +398,7 @@ async function handleEndHumanChat(socket, data, namespace) {
       const agentSocket = agentConnections.get(previousAgentId);
       if (agentSocket) {
         agentSocket.emit("session:ended", { sessionId });
-        
+
         // Remove from agent's sessions
         const sessions = agentSessions.get(previousAgentId);
         if (sessions) sessions.delete(sessionId);
@@ -343,10 +414,10 @@ async function handleEndHumanChat(socket, data, namespace) {
 async function handleUpdateUserInfo(socket, data) {
   try {
     const { sessionId, userInfo } = data;
-    
+
     await ChatSession.findOneAndUpdate(
       { sessionId },
-      { $set: { guestInfo: userInfo, lastActivityAt: new Date() } }
+      { $set: { guestInfo: userInfo, lastActivityAt: new Date() } },
     );
   } catch (error) {
     console.error("Handle update user info error:", error);
@@ -359,7 +430,9 @@ async function sendWaitingQueue(socket) {
   try {
     const waitingSessions = await ChatSession.find({ status: "waiting" })
       .sort({ humanRequestedAt: 1 })
-      .select("sessionId guestInfo queuePosition humanRequestedAt messageCount");
+      .select(
+        "sessionId guestInfo queuePosition humanRequestedAt messageCount userType",
+      );
 
     socket.emit("queue:list", waitingSessions);
   } catch (error) {
@@ -439,7 +512,7 @@ async function handleAgentMessage(socket, data, namespace) {
 async function handleAgentTyping(socket, data, namespace) {
   try {
     const { sessionId, isTyping } = data;
-    
+
     const userSocket = activeConnections.get(sessionId);
     if (userSocket) {
       userSocket.emit("agent:typing", isTyping);
@@ -466,10 +539,16 @@ async function handleAcceptSession(socket, data, namespace) {
     }
 
     // Get agent info (simplified - you'd get this from Admin model)
+    const agent = await Admin.findById(agentId).select("name email avatar");
+    if (!agent) {
+      socket.emit("error", { message: "Agent not found" });
+      return;
+    }
+
     const agentInfo = {
-      name: `Agent ${agentId.slice(-4)}`, // Placeholder
-      email: null,
-      avatar: null,
+      name: agent.name,
+      email: agent.email,
+      avatar: agent.avatar || null,
     };
 
     // Update session
@@ -485,7 +564,7 @@ async function handleAcceptSession(socket, data, namespace) {
     // Update queue positions for other waiting sessions
     await ChatSession.updateMany(
       { status: "waiting", queuePosition: { $gt: oldQueuePosition } },
-      { $inc: { queuePosition: -1 } }
+      { $inc: { queuePosition: -1 } },
     );
 
     // Add to agent's sessions
@@ -612,7 +691,9 @@ function notifyAgentOfUserStatus(sessionId, status, namespace) {
   ChatSession.findOne({ sessionId })
     .then((session) => {
       if (session?.assignedAgent) {
-        const agentSocket = agentConnections.get(session.assignedAgent.toString());
+        const agentSocket = agentConnections.get(
+          session.assignedAgent.toString(),
+        );
         if (agentSocket) {
           agentSocket.emit("user:status", { sessionId, status });
         }
@@ -634,7 +715,7 @@ function notifyUserOfAgentStatus(sessionId, agentInfo, namespace) {
 
 async function cleanupStaleConnections(namespace) {
   console.log("Running stale connection cleanup...");
-  
+
   // Clean up expired sessions in database
   await ChatSession.cleanupExpiredSessions();
 

@@ -1,5 +1,6 @@
 const ChatSession = require("../models/ChatSessionSchema");
 const ChatMessage = require("../models/ChatMessageSchema");
+const Admin = require("../models/AdminSchema");
 
 /**
  * Chat Controller
@@ -182,6 +183,48 @@ const saveMessage = async (req, res) => {
     });
   }
 };
+const getAllSessions = async (req, res) => {
+  try {
+    const sessions = await ChatSession.find()
+      .populate("userId", "name email")
+      .populate("assignedAgent", "name email")
+      .sort({ lastActivityAt: -1 });
+
+    res.status(200).json({ success: true, data: sessions });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+// const getAllSessions = async (req, res) => {
+//   try {
+//     const { status, mode, page = 1, limit = 20 } = req.query;
+
+//     let filter = {};
+//     if (status) filter.status = status;
+//     if (mode) filter.mode = mode;
+
+//     const sessions = await ChatSession.find(filter)
+//       .populate("userId", "name email")
+//       .populate("assignedAgent", "name email")
+//       .sort({ lastActivityAt: -1 })
+//       .skip((page - 1) * limit)
+//       .limit(parseInt(limit));
+
+//     const total = await ChatSession.countDocuments(filter);
+
+//     res.status(200).json({
+//       success: true,
+//       data: sessions,
+//       pagination: {
+//         total,
+//         page: parseInt(page),
+//         pages: Math.ceil(total / limit),
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
 
 // Request human agent
 const requestHumanAgent = async (req, res) => {
@@ -353,7 +396,7 @@ const assignSessionToAgent = async (req, res) => {
         status: "waiting",
         queuePosition: { $gt: session.queuePosition || 0 },
       },
-      { $inc: { queuePosition: -1 } }
+      { $inc: { queuePosition: -1 } },
     );
 
     res.status(200).json({
@@ -514,14 +557,15 @@ module.exports = {
   saveMessage,
   requestHumanAgent,
   closeSession,
-  
+
   // Agent endpoints
   getWaitingSessions,
   getAgentSessions,
   assignSessionToAgent,
   transferSession,
-  
+
   // Admin endpoints
   getChatStats,
   cleanupExpiredSessions,
+  getAllSessions,
 };

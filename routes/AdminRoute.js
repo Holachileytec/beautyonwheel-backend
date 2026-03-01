@@ -4,6 +4,7 @@ const {
   adminUpdateProfile,
   getAdmin,
   AdminPasscode,
+  adminLogin,
 } = require("../controller/AdminController.js");
 const auth = require("../middleware/authMiddleware.js");
 const { isAdmin } = require("../middleware/roleMiddleware.js");
@@ -13,5 +14,6 @@ const { isAdmin } = require("../middleware/roleMiddleware.js");
 router.get("/profile", auth, isAdmin, getAdmin);
 router.put("/profile", auth, isAdmin, adminUpdateProfile);
 router.post("/code", AdminPasscode);
+router.post("/loginA", adminLogin);
 
 module.exports = router;

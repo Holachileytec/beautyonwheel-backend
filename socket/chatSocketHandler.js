@@ -97,6 +97,7 @@ function handleUserConnection(socket, sessionId, namespace) {
 function handleAgentConnection(socket, agentId, namespace) {
   console.log(`Agent connected: agentId=${agentId}`);
 
+
   // Store connection
   agentConnections.set(agentId, socket);
   socket.agentId = agentId;
@@ -189,7 +190,27 @@ function handleAgentConnection(socket, agentId, namespace) {
     }
     agentSessions.delete(agentId);
   });
+  
+  // Restore in-memory session tracking from DB on reconnect
+  ChatSession.find({ assignedAgent: agentId, mode: "human", status: "active" })
+    .then(sessions => {
+      const sessionSet = agentSessions.get(agentId) || new Set();
+      sessions.forEach(s => {
+        sessionSet.add(s.sessionId);
+        socket.join(`session:${s.sessionId}`); // ← rejoin rooms!
+      });
+      agentSessions.set(agentId, sessionSet);
+
+      // Notify clients their agent is back
+      sessions.forEach(s => {
+        const userSocket = activeConnections.get(s.sessionId);
+        if (userSocket) {
+          userSocket.emit("agent:connected", s.agentInfo);
+        }
+      });
+    });
 }
+
 
 /**
  * Setup common event handlers
@@ -237,11 +258,28 @@ async function initializeSession(socket, sessionId) {
         socket.emit("agent:connected", session.agentInfo);
         agentSocket.emit("user:reconnected", { sessionId });
       } else {
-        // Agent offline, switch back to AI
-        session.mode = "ai";
-        session.assignedAgent = null;
-        session.agentInfo = { name: null, email: null, avatar: null };
-        await session.save();
+        // Agent is temporarily offline — DON'T wipe assignment yet
+        // Just notify the user and keep the session intact
+        socket.emit("agent:temporarily_unavailable", {
+          message: "Your agent is temporarily unavailable, please wait...",
+          agentInfo: session.agentInfo, // still show who their agent is
+        });
+
+        // Optionally set a grace period before switching to AI
+        setTimeout(async () => {
+          const freshSession = await ChatSession.findOne({ sessionId });
+          // Only switch to AI if agent STILL hasn't reconnected
+          if (
+            freshSession?.mode === "human" &&
+            !agentConnections.has(freshSession.assignedAgent?.toString())
+          ) {
+            freshSession.mode = "ai";
+            freshSession.assignedAgent = null;
+            freshSession.agentInfo = { name: null, email: null, avatar: null };
+            await freshSession.save();
+            socket.emit("mode:changed", { mode: "ai" });
+          }
+        }, 30000); // 30 second grace period
       }
     }
 
@@ -301,6 +339,7 @@ async function handleUserMessage(socket, data, namespace) {
     }
 
     // Acknowledge receipt
+    console.log("delivered", data);
     socket.emit("message:delivered", {
       messageId: chatMessage.messageId,
       timestamp: chatMessage.createdAt.toISOString(),

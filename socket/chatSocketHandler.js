@@ -97,7 +97,6 @@ function handleUserConnection(socket, sessionId, namespace) {
 function handleAgentConnection(socket, agentId, namespace) {
   console.log(`Agent connected: agentId=${agentId}`);
 
-
   // Store connection
   agentConnections.set(agentId, socket);
   socket.agentId = agentId;
@@ -190,27 +189,29 @@ function handleAgentConnection(socket, agentId, namespace) {
     }
     agentSessions.delete(agentId);
   });
-  
+
   // Restore in-memory session tracking from DB on reconnect
-  ChatSession.find({ assignedAgent: agentId, mode: "human", status: "active" })
-    .then(sessions => {
-      const sessionSet = agentSessions.get(agentId) || new Set();
-      sessions.forEach(s => {
-        sessionSet.add(s.sessionId);
-        socket.join(`session:${s.sessionId}`); // ← rejoin rooms!
-      });
-      agentSessions.set(agentId, sessionSet);
-
-      // Notify clients their agent is back
-      sessions.forEach(s => {
-        const userSocket = activeConnections.get(s.sessionId);
-        if (userSocket) {
-          userSocket.emit("agent:connected", s.agentInfo);
-        }
-      });
+  ChatSession.find({
+    assignedAgent: agentId,
+    mode: "human",
+    status: "active",
+  }).then((sessions) => {
+    const sessionSet = agentSessions.get(agentId) || new Set();
+    sessions.forEach((s) => {
+      sessionSet.add(s.sessionId);
+      socket.join(`session:${s.sessionId}`); // ← rejoin rooms!
     });
-}
+    agentSessions.set(agentId, sessionSet);
 
+    // Notify clients their agent is back
+    sessions.forEach((s) => {
+      const userSocket = activeConnections.get(s.sessionId);
+      if (userSocket) {
+        userSocket.emit("agent:connected", s.agentInfo);
+      }
+    });
+  });
+}
 
 /**
  * Setup common event handlers
@@ -296,16 +297,17 @@ async function initializeSession(socket, sessionId) {
 }
 
 async function handleUserMessage(socket, data, namespace) {
+  
   try {
     const { sessionId, message } = data;
-    const session = await ChatSession.findOne({ sessionId });
 
+    const session = await ChatSession.findOne({ sessionId });
     if (!session) {
       socket.emit("error", { message: "Session not found" });
       return;
     }
 
-    // Save message to database
+    // Save message
     const chatMessage = new ChatMessage({
       sessionId,
       messageId: message.id || `msg_${Date.now()}`,
@@ -314,6 +316,7 @@ async function handleUserMessage(socket, data, namespace) {
       senderName: session.guestInfo?.name || "User",
       clientTimestamp: message.timestamp ? new Date(message.timestamp) : null,
     });
+
     await chatMessage.save();
 
     // Update session activity
@@ -321,25 +324,40 @@ async function handleUserMessage(socket, data, namespace) {
     session.lastActivityAt = new Date();
     await session.save();
 
-    // If in human mode, forward to agent
-    if (session.mode === "human" && session.assignedAgent) {
+    const formattedMessage = {
+      id: chatMessage.messageId,
+      text: chatMessage.text,
+      sender: "user",
+      senderName: chatMessage.senderName,
+      timestamp: chatMessage.createdAt.toISOString(),
+    };
+
+    /**
+     * 🔥 Forward message to assigned agent (if exists)
+     * DO NOT block by mode — only check assignedAgent
+     */
+    if (session.assignedAgent) {
       const agentSocket = agentConnections.get(
         session.assignedAgent.toString(),
       );
+
       if (agentSocket) {
         agentSocket.emit("user:message", {
           sessionId,
-          message: {
-            ...message,
-            id: chatMessage.messageId,
-            timestamp: chatMessage.createdAt.toISOString(),
-          },
+          message: formattedMessage,
         });
       }
     }
 
-    // Acknowledge receipt
-    console.log("delivered", data);
+    // Optional: notify all agents if session is still waiting
+    if (session.status === "waiting") {
+      namespace.to("agents").emit("queue:messageUpdate", {
+        sessionId,
+        message: formattedMessage,
+      });
+    }
+
+    // Acknowledge back to user
     socket.emit("message:delivered", {
       messageId: chatMessage.messageId,
       timestamp: chatMessage.createdAt.toISOString(),

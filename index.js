@@ -19,6 +19,7 @@ const GalleryRoute = require("./routes/GalleryRoute.js");
 const ServiceTypesRoutes = require("./routes/ServiceTypesRoute.js");
 const planRoute = require("./routes/planRoute.js");
 const chatRoute = require("./routes/chatRoute.js");
+const NotificationRoute= require("./routes/NotificationRoute.js");
 const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
 
 connectDB();
@@ -186,6 +187,7 @@ app.use("/api/bookings", BookingRoutes);
 app.use("/api/admin", AdminRoutes);
 app.use("/api/payments", PaymentRoute);
 app.use("/api/paystack", paystackRoute);
+app.use("/api/notification", NotificationRoute);
 // app.use("/webhooks/paystack", paystackRoutes);
 app.use("/api/gallery", GalleryRoute);
 app.use("/api/subservices", ServiceTypesRoutes);

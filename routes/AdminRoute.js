@@ -7,10 +7,12 @@ const {
   getAdmin,
   AdminPasscode,
   adminLogin,
+  adminLogout,
   registerAdmin,
 } = require("../controller/AdminController.js");
 
 router.post("/loginA", adminLogin);
+router.post("/logout",adminLogout)
 router.post("/code", AdminPasscode);
 router.post("/register", registerAdmin); // ← new route
 router.get("/profile", auth, isAdmin, getAdmin);

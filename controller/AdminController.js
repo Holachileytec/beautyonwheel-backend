@@ -61,6 +61,7 @@ const registerAdmin = async (req, res) => {
   }
 };
 
+
 const adminLogin = async (req, res) => {
   try {
     const { username, password, passkey } = req.body;
@@ -102,6 +103,20 @@ const adminLogin = async (req, res) => {
       .json({ message: "An error occurred", error: error.message });
   }
 };
+const adminLogout = async (req, res) => {
+  try {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.clearCookie("connect.sid"); // clear session cookie
+      res.status(200).json({ message: "Logged out successfully" });
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Logout failed", error: error.message });
+  }
+};
+
 const getAdmin = async (req, res) => {
   try {
     const admin = await Admin.findOne({ user: req.userId }).populate(
@@ -171,6 +186,7 @@ const adminUpdateProfile = async (req, res) => {
 module.exports = {
   registerAdmin,
   adminLogin,
+  adminLogout,
   adminUpdateProfile,
   getAdmin,
   AdminPasscode,

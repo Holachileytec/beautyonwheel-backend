@@ -5,27 +5,31 @@ const getAllNotifications = async (req, res) => {
     const notifications = await Notification.find({
       recipient: req.userId,
     }).sort({ createdAt: -1 });
-    if (!notifications || notifications.length === 0) return;
-    res
-      .status(200)
-      .json({ message: "Notification Accessed successfully", notifications });
+
+    // ✅ Always respond — empty array is valid
+    res.status(200).json({
+      message: "Notifications accessed successfully",
+      notifications: notifications || [],
+    });
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Notifications could not be accessed", error: error });
+      .json({ message: "Notifications could not be accessed", error });
   }
 };
-
 const markAsRead = async (req, res) => {
   try {
-    const { id } = req.params;
-    await Notification.findByIdAndUpdate(id, { isRead: true });
-    res.status(200).json({ message: "Notification marked as read!" });
-  } catch (err) {
-    res.status(500).json({ message: "Notification not updated!" });
+    const notificationId = req.params.id;
+
+    await Notification.findByIdAndUpdate(notificationId, {
+      read: true,
+    });
+
+    res.status(200).json({ message: "Notification marked as read" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to mark notification", error });
   }
 };
-
 const createNotification = async (userId, title, message) => {
   try {
     const newNotification = new Notification({

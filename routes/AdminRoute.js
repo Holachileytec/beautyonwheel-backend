@@ -11,7 +11,7 @@ const {
   registerAdmin,
 } = require("../controller/AdminController.js");
 
-router.post("/loginA", adminLogin);
+router.post("/login ", adminLogin);
 router.post("/logout",adminLogout)
 router.post("/code", AdminPasscode);
 router.post("/register", registerAdmin); // ← new route

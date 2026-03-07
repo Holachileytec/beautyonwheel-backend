@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path")
 const http = require("http");
 const { Server } = require("socket.io");
 const cookieParser = require("cookie-parser");
@@ -19,7 +20,7 @@ const GalleryRoute = require("./routes/GalleryRoute.js");
 const ServiceTypesRoutes = require("./routes/ServiceTypesRoute.js");
 const planRoute = require("./routes/planRoute.js");
 const chatRoute = require("./routes/chatRoute.js");
-const NotificationRoute= require("./routes/NotificationRoute.js");
+const NotificationRoute = require("./routes/NotificationRoute.js");
 const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
 
 connectDB();
@@ -139,6 +140,7 @@ app.options(/.*/, cors(corsOptions));
 // 3. Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // 4. Cookie parser
 app.use(cookieParser());

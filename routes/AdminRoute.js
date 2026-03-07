@@ -14,7 +14,7 @@ const {
 router.post("/login ", adminLogin);
 router.post("/logout",adminLogout)
 router.post("/code", AdminPasscode);
-router.post("/register", registerAdmin); // ← new route
+router.post("/admin/register", registerAdmin); // ← new route
 router.get("/profile", auth, isAdmin, getAdmin);
 router.put("/profile", auth, isAdmin, adminUpdateProfile);
 

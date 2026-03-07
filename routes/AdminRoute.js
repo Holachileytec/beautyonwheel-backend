@@ -11,10 +11,10 @@ const {
   registerAdmin,
 } = require("../controller/AdminController.js");
 
-router.post("/login ", adminLogin);
+router.post("/login", adminLogin);
 router.post("/logout",adminLogout)
 router.post("/code", AdminPasscode);
-router.post("/admin/register", registerAdmin); // ← new route
+router.post("/register", registerAdmin); // ← new route
 router.get("/profile", auth, isAdmin, getAdmin);
 router.put("/profile", auth, isAdmin, adminUpdateProfile);
 

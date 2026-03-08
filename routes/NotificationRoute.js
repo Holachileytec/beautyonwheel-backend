@@ -6,8 +6,8 @@ const {
   markAsRead,
 } = require("../controller/notificationController.js");
 
-router.get("/Notifications", getAllNotifications);
-router.post("/Notifications", createNotification); // ← router.push doesn't exist, use router.post
-router.get("/Notifications/read/:id", markAsRead); // ← missing leading slash
+router.get("/", getAllNotifications);
+router.post("/", createNotification);
+router.get("/read/:id", markAsRead);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 const express = require("express");
-const path = require("path")
+const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
 const cookieParser = require("cookie-parser");
@@ -20,7 +20,7 @@ const GalleryRoute = require("./routes/GalleryRoute.js");
 const ServiceTypesRoutes = require("./routes/ServiceTypesRoute.js");
 const planRoute = require("./routes/planRoute.js");
 const chatRoute = require("./routes/chatRoute.js");
-const NotificationRoute = require("./routes/NotificationRoute.js");
+const notificationRoutes = require("./routes/notificationRoute.js");
 const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
 
 connectDB();
@@ -189,7 +189,7 @@ app.use("/api/bookings", BookingRoutes);
 app.use("/api/admin", AdminRoutes);
 app.use("/api/payments", PaymentRoute);
 app.use("/api/paystack", paystackRoute);
-app.use("/api/notification", NotificationRoute);
+app.use("/api/notifications", notificationRoutes);
 // app.use("/webhooks/paystack", paystackRoutes);
 app.use("/api/gallery", GalleryRoute);
 app.use("/api/subservices", ServiceTypesRoutes);

@@ -61,7 +61,6 @@ const registerAdmin = async (req, res) => {
   }
 };
 
-
 const adminLogin = async (req, res) => {
   try {
     const { username, password, passkey } = req.body;
@@ -105,13 +104,10 @@ const adminLogin = async (req, res) => {
 };
 const adminLogout = async (req, res) => {
   try {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Logout failed" });
-      }
-      res.clearCookie("connect.sid"); // clear session cookie
-      res.status(200).json({ message: "Logged out successfully" });
-    });
+    res.clearCookie("token");
+    return res
+      .status(200)
+      .json({ success: true, message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: "Logout failed", error: error.message });
   }

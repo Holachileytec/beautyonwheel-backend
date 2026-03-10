@@ -13,7 +13,7 @@ const {
 
 router.post("/api/admin/login", adminLogin);
 router.post("/api/admin/logout", adminLogout);
-router.post("/api/admin/code", AdminPasscode);
+router.get("/api/admin/code", AdminPasscode);
 router.post("/api/admin/register", registerAdmin);
 router.get("/profile", auth, isAdmin, getAdmin);
 router.put("/profile", auth, isAdmin, adminUpdateProfile);

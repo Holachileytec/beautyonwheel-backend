@@ -24,9 +24,8 @@ const notificationRoutes = require("./routes/NotificationRoute.js");
 const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
 
 connectDB();
-console.log("DB_URI from env:", process.env.mongodb_url);
-
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
+console.log("DB_URI from env:", process.env.mongodb_url)
 const app = express();
 const server = http.createServer(app);
 

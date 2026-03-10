@@ -20,13 +20,13 @@ const GalleryRoute = require("./routes/GalleryRoute.js");
 const ServiceTypesRoutes = require("./routes/ServiceTypesRoute.js");
 const planRoute = require("./routes/planRoute.js");
 const chatRoute = require("./routes/chatRoute.js");
-const notificationRoutes = require("./routes/notificationRoute.js");
+const notificationRoutes = require("./routes/NotificationRoute.js");
 const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
 
 connectDB();
 console.log("DB_URI from env:", process.env.mongodb_url);
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3000;
 const app = express();
 const server = http.createServer(app);
 
@@ -130,8 +130,8 @@ if (!isDevelopment) {
 }
 
 // 2. CORS — must come BEFORE routes
-app.use(cors(corsOptions));
 
+app.use(cors(corsOptions));
 //  Explicitly handle OPTIONS preflight for ALL routes.
 // Without this, browsers never get a response to their preflight request
 // and block the actual request before it's even sent.

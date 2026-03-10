@@ -6,7 +6,7 @@ const getAllNotifications = async (req, res) => {
       recipient: req.userId,
     }).sort({ createdAt: -1 });
 
-    // ✅ Always respond — empty array is valid
+    // Always respond — empty array is valid
     res.status(200).json({
       message: "Notifications accessed successfully",
       notifications: notifications || [],

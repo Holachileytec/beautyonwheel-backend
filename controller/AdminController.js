@@ -1,5 +1,4 @@
 const Admin = require("../models/AdminSchema.js");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/UserSchema.js"); // add this at the top
@@ -27,16 +26,13 @@ const registerAdmin = async (req, res) => {
         .json({ message: "Admin account already exists for this user" });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Create admin
     const newAdmin = await Admin.create({
       user: userId,
       username,
-      password: hashedPassword,
+      password: password,
       code: passkey,
-      role: "support",
+      role: "admin",
     });
 
     // Update user role to admin
@@ -82,14 +78,11 @@ const adminLogin = async (req, res) => {
         .json({ message: "Admin account not found. Contact superadmin." });
     }
 
-    // Verify password
-    const aMatch = await bcrypt.compare(password, admin.password);
-    if (!aMatch) {
+    if (password !== admin.password) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
     const token = jwt.sign(
-      { id: admin.user._id, role: "admin" },
+      { id: admin.user._id, role: admin.role },
       process.env.JWT_SECRET,
       { expiresIn: "8h" },
     );

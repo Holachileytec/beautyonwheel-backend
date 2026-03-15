@@ -2,15 +2,20 @@ const Gallery = require("../models/GallerySchema.js");
 
 //logic for uploading a job to gallery
 const beauticianUploadJob = async (req, res) => {
+  console.log(req.file);
+  console.log("hitting", req.file);
+
   try {
     if (!req.file) {
       return res.status(400).json({ message: "Please upload an image file." });
     }
+
     const newGalleryItem = await Gallery.create({
-      beauticianId,
+      beauticianId: req.body.beauticianId,
       imageUrl: `/uploads/${req.file.filename}`,
       description: req.body.description,
     });
+
     res
       .status(201)
       .json({ message: " Job uploaded successfully", newGalleryItem });

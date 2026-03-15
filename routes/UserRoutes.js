@@ -1,3 +1,4 @@
+// routes/userRoutes.js
 const express = require("express");
 const router = express.Router();
 const {
@@ -10,15 +11,14 @@ const {
 } = require("../controller/UserController.js");
 const auth = require("../middleware/authMiddleware.js");
 
-// Public routes
-router.post("/signup", registerUser);
+// Public
+router.post("/register", registerUser);
 router.post("/login", loginUser);
 
-// Protected routes
-router.get("/getAllUsers", auth, getAllUsers);
-router.get("/:id", auth, getSingleUser);
-router.put("/:id", auth, updateUser);
-router.put("/userUpdate/:id", auth, updateUser);
+// Protected
+router.get("/all", auth, getAllUsers);
+router.get("/single/:id", auth, getSingleUser);
+router.put("/update/:id", auth, updateUser);
 router.delete("/delete/:id", auth, deleteUser);
 
 module.exports = router;

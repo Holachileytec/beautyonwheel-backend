@@ -23,8 +23,8 @@ router.get("/user/:userId", getBeauticianByUserId);
 // Protected routes
 router.put("/profile-update", auth, updateBeauticianProfile);
 router.post("/add-service", auth, addService);
-router.post("/uploadpic", beauticianUploadJob);
-router.get("/getAllGallery", localUpload.single("image"), getAllGalleryItems);
+router.post("/uploadpic", localUpload.single("image"), beauticianUploadJob);
+router.get("/getAllGallery", getAllGalleryItems);
 router.delete("/delete/:id", auth, deleteBeautician);
 router.get("/:id", getBeauticianProfile);
 router.put("/Bupdate/:id", updateBeautician);

@@ -20,7 +20,7 @@ const GalleryRoute = require("./routes/GalleryRoute.js");
 const ServiceTypesRoutes = require("./routes/ServiceTypesRoute.js");
 const planRoute = require("./routes/planRoute.js");
 const chatRoute = require("./routes/chatRoute.js");
-const notificationRoutes = require("./routes/notificationRoute.js");
+const notificationRoutes = require("./routes/NotificationRoute.js");
 const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
 
 connectDB();

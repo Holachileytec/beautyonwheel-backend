@@ -11,12 +11,13 @@ const {
 const auth = require("../middleware/authMiddleware.js");
 
 // Public routes
+router.post("/register", registerUser);
 router.post("/signup", registerUser);
 router.post("/login", loginUser);
 
 // Protected routes
 router.get("/getAllUsers", auth, getAllUsers);
-router.get("/:id", auth, getSingleUser);
+router.get("/single/:id", auth, getSingleUser);
 router.put("/:id", auth, updateUser);
 router.put("/userUpdate/:id", auth, updateUser);
 router.delete("/delete/:id", auth, deleteUser);

@@ -157,7 +157,7 @@ const AdminPasscode = async (req, res) => {
       );
       return res
         .status(200)
-        .json({ success: true, message: "Access granted!", token });
+        .json({ success: true, messasge: "Access granted!", token });
     } else {
       return res
         .status(401)

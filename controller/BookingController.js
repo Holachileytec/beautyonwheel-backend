@@ -19,7 +19,7 @@ const createBooking = async (req, res) => {
     // Admin role: get the ID from req.userId
     // req.body.clientId may be missing or is fake ..better request from JWT
     else if (req.user.role === "admin") {
-      clientId = req.userId;
+      clientId = req.body.clientId || req.userId || req.user._id;
     }
 
     // If still undefined, throw error

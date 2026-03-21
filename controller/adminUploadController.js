@@ -18,5 +18,4 @@ const handleAdminUpload = async (req, res) => {
     res.status(500).json({ message: "internal server error", error });
   }
 };
-
-module.exports= {handleAdminUpload};
+module.exports= {handleAdminUpload}; 

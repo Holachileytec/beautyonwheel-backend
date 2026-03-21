@@ -1,7 +1,7 @@
-const Gallery = require("../models/GallerySchema.js");
+const AdminGallery = require("../models/adminUploadJobSchema.js");
 
-//logic for uploading a job to gallery
-const beauticianUploadJob = async (req, res) => {
+//logic for uploading a job to Admin gallery
+const AdminSubmitJob = async (req, res) => {
   console.log(req.file);
   console.log("hitting", req.file);
 
@@ -10,8 +10,8 @@ const beauticianUploadJob = async (req, res) => {
       return res.status(400).json({ message: "Please upload an image file." });
     }
 
-    const newGalleryItem = await Gallery.create({
-      beauticianId: req.body.beauticianId,
+    const newGalleryItem = await AdminGallery.create({
+      adminId: req.body.adminId,
       imageUrl: `/uploads/${req.file.filename}`,
       description: req.body.description,
     });
@@ -25,9 +25,9 @@ const beauticianUploadJob = async (req, res) => {
   }
 };
 
-const getAllGalleryItems = async (req, res) => {
+const getAllAdminGalleryItems = async (req, res) => {
   try {
-    const galleryItems = await Gallery.find().sort({ createdAt: -1 });
+    const galleryItems = await AdminGallery.find().sort({ createdAt: -1 });
     res.status(200).json(galleryItems);
   } catch (error) {
     console.log("something went wrong when fetching gallery items", error);
@@ -35,10 +35,10 @@ const getAllGalleryItems = async (req, res) => {
   }
 };
 
-const deleteGalleryItem = async (req, res) => {
+const deleteAdminGalleryItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const deleted = await Gallery.findByIdAndDelete(id);
+    const deleted = await AdminGallery.findByIdAndDelete(id);
     res.status(200).json({ message: "Image Deleted Successfully" });
   } catch (error) {
     res
@@ -46,4 +46,8 @@ const deleteGalleryItem = async (req, res) => {
       .json({ message: "An error of=ccured while deleting image", error });
   }
 };
-module.exports = { getAllGalleryItems, beauticianUploadJob, deleteGalleryItem };
+module.exports = {
+  getAllAdminGalleryItems,
+  AdminSubmitJob,
+  deleteAdminGalleryItem,
+};

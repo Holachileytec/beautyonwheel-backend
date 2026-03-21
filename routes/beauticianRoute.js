@@ -13,6 +13,7 @@ const auth = require("../middleware/authMiddleware.js");
 const {
   getAllGalleryItems,
   beauticianUploadJob,
+  deleteGalleryItem,
 } = require("../controller/beauticianUploadJobController.js");
 const localUpload = require("../middleware/adminUpload.js");
 
@@ -28,5 +29,5 @@ router.get("/getAllGallery", getAllGalleryItems);
 router.delete("/delete/:id", auth, deleteBeautician);
 router.get("/:id", getBeauticianProfile);
 router.put("/Bupdate/:id", updateBeautician);
-
+router.delete("/deleteImg/:id", deleteGalleryItem);
 module.exports = router;

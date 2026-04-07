@@ -18,6 +18,7 @@ const PaymentRoute = require("./routes/paystackRoute.js");
 const paystackRoute = require("./routes/paystackRoute.js");
 const GalleryRoute = require("./routes/GalleryRoute.js");
 const ServiceTypesRoutes = require("./routes/ServiceTypesRoute.js");
+const studentRoute = require("./routes/studentRoute.js");
 const planRoute = require("./routes/planRoute.js");
 const chatRoute = require("./routes/chatRoute.js");
 const notificationRoutes = require("./routes/NotificationRoute.js");
@@ -25,7 +26,7 @@ const { initializeChatSocket } = require("./socket/chatSocketHandler.js");
 
 connectDB();
 const PORT = process.env.PORT || 5000;
-console.log("DB_URI from env:", process.env.mongodb_url)
+console.log("DB_URI from env:", process.env.mongodb_url);
 const app = express();
 const server = http.createServer(app);
 
@@ -194,6 +195,8 @@ app.use("/api/gallery", GalleryRoute);
 app.use("/api/subservices", ServiceTypesRoutes);
 app.use("/api/plan", planRoute);
 app.use("/api/chat", chatRoute);
+app.use("/api/academics", studentRoute);
+
 
 // ============================================
 // HEALTH CHECK

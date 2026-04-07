@@ -9,6 +9,8 @@ const {
   adminLogin,
   adminLogout,
   registerAdmin,
+  adminCreateCodes,
+  getAllCodes,
 } = require("../controller/AdminController.js");
 const {
   getAllAdminGalleryItems,
@@ -26,5 +28,7 @@ router.put("/profile", auth, isAdmin, adminUpdateProfile);
 router.get("/getAdminImg", getAllAdminGalleryItems);
 router.post("/uploadAJob", localUpload.single("AImage"), AdminSubmitJob);
 router.delete("/deletAJob/:id", deleteAdminGalleryItem);
+router.post("/generateCodes", adminCreateCodes);
+router.get("/allCodes", getAllCodes);
 
 module.exports = router;

@@ -24,6 +24,7 @@ const AdminSubmitJob = async (req, res) => {
     res.status(500).json({ message: "internal server error", error });
   }
 };
+
 const getAllAdminGalleryItems = async (req, res) => {
   try {
     const galleryItems = await AdminGallery.find().sort({ createdAt: -1 });

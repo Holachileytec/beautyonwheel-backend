@@ -25,11 +25,14 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+    
+    resetToken: { type: String },
+    resetTokenExpiry: { type: Date },
     membership: {
       type: {
         type: String,
-        enum: ['none', 'normal', 'vip', 'vvip'],
-        default: 'none',
+        enum: ["none", "normal", "vip", "vvip"],
+        default: "none",
       },
       startDate: { type: Date },
       expiryDate: { type: Date },
@@ -39,13 +42,13 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["beautician", "client", "admin"],
-      default:"client",
+      default: "client",
       required: true,
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 module.exports = mongoose.model("User", userSchema);

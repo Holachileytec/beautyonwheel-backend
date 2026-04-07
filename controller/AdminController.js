@@ -1,6 +1,7 @@
 const Admin = require("../models/AdminSchema.js");
 const jwt = require("jsonwebtoken");
 const User = require("../models/UserSchema.js");
+const Codes = require("../models/StoredStudentCodesModel.js");
 
 const registerAdmin = async (req, res) => {
   try {
@@ -157,20 +158,44 @@ const AdminPasscode = async (req, res) => {
       );
       return res
         .status(200)
-        .json({ success: true, messasge: "Access granted!", token });
+        .json({ success: true, message: "Access granted!", token });
     } else {
       return res
         .status(401)
         .json({ success: false, message: "Invalid door code." });
     }
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "An error occurred",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "An error occurred",
+      error: error.message,
+    });
+  }
+};
+
+const adminCreateCodes = async (req, res) => {
+  try {
+    const { count } = req.body;
+    const allCodes = [];
+    for (let i = 0; i < count; i++) {
+      const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      allCodes.push({ code: newCode });
+    }
+    await Codes.insertMany(allCodes, { ordered: false });
+    return res
+      .status(201)
+      .json({ success: true, message: `${count} codes generated` });
+  } catch (error) {
+    res.status(500).json({ message: "Error", error: error.message });
+  }
+};
+
+const getAllCodes = async (req, res) => {
+  try {
+    const allCodes = await Codes.find();
+    return res.status(200).json({ success: true, codes: allCodes });
+  } catch (error) {
+    res.status(500).json({ message: "Error", error: error.message });
   }
 };
 
@@ -204,4 +229,6 @@ module.exports = {
   adminUpdateProfile,
   getAdmin,
   AdminPasscode,
+  adminCreateCodes,
+  getAllCodes,
 };

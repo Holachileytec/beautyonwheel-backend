@@ -12,7 +12,7 @@ const beauticianUploadJob = async (req, res) => {
 
     const newGalleryItem = await Gallery.create({
       beauticianId: req.body.beauticianId,
-      imageUrl: `/uploads/${req.file.filename}`,
+       imageUrl: `/uploads/admin/${req.file.filename}`,
       description: req.body.description,
     });
 
@@ -39,6 +39,7 @@ const deleteGalleryItem = async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Gallery.findByIdAndDelete(id);
+    if(!deleted)return res.status(404).json({message:"item not"})
     res.status(200).json({ message: "Image Deleted Successfully" });
   } catch (error) {
     res

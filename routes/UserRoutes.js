@@ -1,3 +1,4 @@
+const { forgotPassword } = require("../controller/forgotPassword.js");
 const express = require("express");
 const router = express.Router();
 const {
@@ -13,11 +14,13 @@ const auth = require("../middleware/authMiddleware.js");
 // Public
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.post("/forgot-password", forgotPassword);
 
 // Protected
 router.get("/all", auth, getAllUsers);
 router.get("/single/:id", auth, getSingleUser);
 router.put("/update/:id", auth, updateUser);
 router.delete("/delete/:id", auth, deleteUser);
+
 
 module.exports = router;

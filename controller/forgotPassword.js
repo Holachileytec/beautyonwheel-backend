@@ -26,7 +26,7 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     // Reset link
-    const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
     // Send email
     const transporter = nodemailer.createTransport({

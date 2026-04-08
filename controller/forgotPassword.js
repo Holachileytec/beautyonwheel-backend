@@ -26,7 +26,7 @@ const forgotPassword = async (req, res) => {
     await user.save();
 
     // Reset link
-    const resetLink = `https://beautyplug.com.ng/reset-password/${resetToken}`;
+    const resetLink = `http://localhost:3000/reset-password/${resetToken}`;
 
     // Send email
     const transporter = nodemailer.createTransport({
@@ -133,7 +133,7 @@ const forgotPassword = async (req, res) => {
         <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.3); margin: 15px 0;" />
         
         <p style="color: #f0e6ff; font-size: 12px; margin: 0;">
-          © 2024 BeautyOnWheels. All rights reserved.<br/>
+          © 2025 BeautyOnWheels. All rights reserved.<br/>
           <a href="http://www.beautyonwheels.com.ng" style="color: #f0e6ff;">www.beautyonwheels.com.ng</a>
         </p>
       </div>

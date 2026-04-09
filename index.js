@@ -56,6 +56,9 @@ const allowedOrigins = [
   "http://127.0.0.1:5174",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
+  //---Vercel---
+  "https://beautyonwheel-original.vercel.app",
+  "https://beauty-on-wheel.vercel.app",
   // --- Production ---
   "https://beautyonwheels.com.ng",
   "https://www.beautyonwheels.com.ng",
@@ -196,7 +199,6 @@ app.use("/api/subservices", ServiceTypesRoutes);
 app.use("/api/plan", planRoute);
 app.use("/api/chat", chatRoute);
 app.use("/api/academics", studentRoute);
-
 
 // ============================================
 // HEALTH CHECK
